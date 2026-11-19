@@ -42,10 +42,19 @@ tr.late td:first-child{border-left:4px solid var(--red)}tr.late td{background:rg
 .steps .done i{background:var(--g2);color:var(--bg)}.steps .cur i{background:var(--g);color:var(--bg);box-shadow:0 0 0 4px var(--gl)}.steps .cur{color:var(--g);font-weight:700}
 .info{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;background:var(--gl);border-radius:10px;padding:12px}.info small{display:block;color:var(--mu);font-size:11px;font-weight:600;text-transform:uppercase}
 .okbox{border-left:5px solid var(--g2);background:var(--gl)}.btn.big{padding:13px 26px;font-size:16px}input[type=search]{margin:0 0 10px}summary{cursor:pointer;font-weight:600;color:var(--g)}nav button i{font-style:normal;margin-right:8px}
-@media(max-width:760px){body{flex-direction:column}nav{position:fixed;bottom:0;left:0;right:0;z-index:5;width:100%;flex-direction:row;padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));gap:0;box-shadow:0 -2px 10px rgba(0,0,0,.25)}nav h1,nav .sv{display:none}nav button{flex:1;display:flex;flex-direction:column;align-items:center;padding:6px 2px;font-size:11px;text-align:center}nav button i{margin:0 0 2px;font-size:19px}main{padding:14px 14px 90px}.steps span{display:none}.steps .cur span{display:block}}
+nav{width:244px;background:linear-gradient(180deg,#14532d,#0e3a20);padding:20px 14px;gap:6px}
+nav h1{display:flex;align-items:center;gap:11px;font-size:15px;margin:0 4px 16px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.18)}
+nav h1::before{content:"🚜";display:grid;place-items:center;width:42px;height:42px;border-radius:11px;background:rgba(255,255,255,.14);font-size:22px;flex:none}
+nav .lb{font-size:11px;letter-spacing:.09em;text-transform:uppercase;opacity:.55;margin:10px 10px 2px}
+nav button{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:11px;font-size:14.5px;font-weight:500;opacity:1;color:rgba(255,255,255,.85);transition:background .15s}
+nav button i{display:grid;place-items:center;width:34px;height:34px;margin:0;border-radius:9px;background:rgba(255,255,255,.1);font-size:17px;flex:none}
+nav button:hover{background:rgba(255,255,255,.12);color:#fff}
+nav button.on{background:#fff;color:#14532d;font-weight:700;box-shadow:0 3px 10px rgba(0,0,0,.25)}nav button.on i{background:#e7f1ea}
+nav .sv{margin-top:auto;justify-content:center;border:1px dashed rgba(255,255,255,.4);background:none;font-size:13px;padding:10px}
+@media(max-width:760px){body{flex-direction:column}nav{position:fixed;bottom:0;left:0;right:0;z-index:5;width:100%;flex-direction:row;padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));gap:0;box-shadow:0 -2px 10px rgba(0,0,0,.25)}nav h1,nav .sv{display:none}nav button{flex:1;display:flex;flex-direction:column;align-items:center;padding:6px 2px;font-size:11px;text-align:center}nav button i{margin:0 0 2px;font-size:19px}main{padding:14px 14px 90px}.steps span{display:none}.steps .cur span{display:block}nav .lb{display:none}nav button i{width:auto;height:auto;background:none}nav button{padding:6px 2px;justify-content:center}nav button.on{background:rgba(255,255,255,.2);color:#fff;box-shadow:none}nav button.on i{background:none}nav .sv{border:0}}
 </style></head><body>
-<nav><h1>Usina Ipê<small>Requisições de Terceiros – PCM</small></h1>
-<button data-v="home"><i>📊</i><span>Painel</span></button><button data-v="new"><i>📝</i><span>Solicitar</span></button><button data-v="pcm"><i>🛠️</i><span>PCM</span></button><button data-v="eq"><i>🚜</i><span>Equipamentos</span></button><button data-v="fr"><i>📁</i><span>Frota</span></button><button class="sv" onclick="saveHtml()" style="margin-top:auto;background:rgba(255,255,255,.16)">💾 Salvar HTML atualizado</button></nav>
+<nav><h1><span>Usina Ipê<small>Requisições de Terceiros – PCM</small></span></h1><div class="lb">Menu</div>
+<button data-v="home"><i>📊</i><span>Painel</span></button><button data-v="new"><i>📝</i><span>Solicitar</span></button><button data-v="pcm"><i>🛠️</i><span>PCM</span></button><button data-v="eq"><i>🚜</i><span>Equipamentos</span></button><div class="lb">Cadastros</div><button data-v="fr"><i>📁</i><span>Bases</span></button><button class="sv" onclick="saveHtml()">💾 Salvar HTML atualizado</button></nav>
 <main id="m"></main>
 <dialog id="dlg"><div class="dh"><b id="dt"></b><button onclick="dlg.close()">×</button></div><div class="db" id="dbody"></div></dialog>
 <script>
@@ -53,7 +62,7 @@ const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"]/g,c=>(
 const ST=["Pendente","Requisição aberta","Enviado","Em execução","Retornou","Cancelada"];
 const today=()=>new Date().toISOString().slice(0,10),fd=d=>d?d.slice(8,10)+"/"+d.slice(5,7)+"/"+d.slice(0,4):"—",fdt=d=>d?new Date(d).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"}):"";
 const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}};
-let snapAt="",err="",reqs=[],frota=[],view="home",F={f:"",s:"",g:"",a:"",b:""},chip="",pf="pend",db=null,msg="";
+let snapAt="",err="",reqs=[],frota=[],sol=[],view="home",F={f:"",s:"",g:"",a:"",b:""},chip="",pf="pend",db=null,msg="";
 const est=r=>[r.eh?r.eh+" h":"",r.es?r.es+" dia(s)":""].filter(Boolean).join(" · ")||"—";
 const ph=(t,u)=>`<h2>${t}</h2><p class="sub">${u}</p>`;let q="";
 const emTerc=r=>r.st=="Enviado"||r.st=="Em execução",atras=r=>emTerc(r)&&r.prev&&r.prev<today();
@@ -64,15 +73,16 @@ const SB="https://mrcxnfzpddkjpbmsmway.supabase.co",KEY="COLE_AQUI_A_CHAVE_ANON_
 const on=()=>!KEY.startsWith("COLE");
 const api=(p,o={})=>fetch(SB+"/rest/v1/"+p,{...o,headers:{apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal",...(o.headers||{})}}).then(async r=>{if(!r.ok)throw new Error((await r.text())||r.status);return r.status==204||r.headers.get("content-length")=="0"?null:r.json().catch(()=>null)});
 const rs=()=>{const a=document.activeElement;if(view=='new'&&a&&/INPUT|TEXTAREA/.test(a.tagName))return;render()};
-async function load(){try{const a=await api("req?select=dados"),c=await api("cfg?chave=eq.frota&select=dados");reqs=(a||[]).map(x=>x.dados);frota=(c&&c[0]&&c[0].dados.rows)||[];err="";}catch(e){err="Erro de conexão com o banco: "+e.message}rs()}
+async function load(){try{const a=await api("req?select=dados"),c=(await api("cfg?chave=in.(frota,solicitantes)&select=chave,dados"))||[];reqs=(a||[]).map(x=>x.dados);const g=k=>{const z=c.find(x=>x.chave==k);return(z&&z.dados.rows)||[]};frota=g("frota");sol=g("solicitantes");err="";}catch(e){err="Erro de conexão com o banco: "+e.message}rs()}
 async function init(){db=on();
  if(db){await load();setInterval(load,15000)}
  else{const sn=document.getElementById("snap");
-  try{if(sn){const d=JSON.parse(sn.textContent);reqs=d.reqs||[];frota=d.frota||[];snapAt=d.em}else{reqs=JSON.parse(ls("ipe_req")||"[]");frota=JSON.parse(ls("ipe_frota")||"[]")}}catch(e){}}
+  try{if(sn){const d=JSON.parse(sn.textContent);reqs=d.reqs||[];frota=d.frota||[];sol=d.sol||[];snapAt=d.em}else{reqs=JSON.parse(ls("ipe_req")||"[]");frota=JSON.parse(ls("ipe_frota")||"[]");sol=JSON.parse(ls("ipe_sol")||"[]")}}catch(e){}}
  render();
 }
 async function saveReq(r){if(db){await api("req",{method:"POST",body:JSON.stringify({id:r.id,dados:r,atualizado:new Date().toISOString()})});reqs=reqs.filter(x=>x.id!=r.id).concat(r);render()}else{reqs=reqs.filter(x=>x.id!=r.id).concat(r);ls("ipe_req",JSON.stringify(reqs));render()}}
 async function saveFrota(rows){if(db){await api("cfg",{method:"POST",body:JSON.stringify({chave:"frota",dados:{rows}})});frota=rows}else{frota=rows;ls("ipe_frota",JSON.stringify(rows))}render()}
+async function saveSol(rows){if(db){await api("cfg",{method:"POST",body:JSON.stringify({chave:"solicitantes",dados:{rows}})});sol=rows}else{sol=rows;ls("ipe_sol",JSON.stringify(rows))}render()}
 async function delRemote(id){if(db)await api("req?id=eq."+encodeURIComponent(id),{method:"DELETE"});reqs=reqs.filter(x=>x.id!=id);if(!db)ls("ipe_req",JSON.stringify(reqs))}
 const who=()=>ls("ipe_who")||"";
 function askWho(){let w=who();if(!w){w=prompt("Seu nome (aparecerá no histórico):")||"";if(w)ls("ipe_who",w)}return w||"Não informado"}
@@ -106,17 +116,18 @@ function kpi(t){if(t=="all"||t=="pend"||t=="resp"){pf=t;view="pcm"}else{chip=t==
 function vNew(){const dl=frota.map(x=>`<option value="${esc(x.f)}">${esc(x.ti||"")} ${esc(x.ma||"")}</option>`).join("");
  return ph("Nova solicitação","Preencha os 3 blocos abaixo. Ao enviar, você recebe um protocolo para acompanhar o pedido.")+(msg?`<div class="card okbox">${msg}<div class="row"><button class="btn alt" onclick="msg='';render()">Fazer outra solicitação</button></div></div>`:"")+
 `<form class="card" onsubmit="sendReq(event)" autocomplete="off">
-<h3 style="margin-top:0">1 · Equipamento</h3><div class="form"><label>Nº da frota *<input id="nf" list="fl" inputmode="numeric" required oninput="fillF(this.value)" placeholder="${frota.length?"Digite ou selecione":"Digite o nº da frota"}"><datalist id="fl">${dl}</datalist></label>
+<h3 style="margin-top:0">1 · Equipamento</h3><div class="form"><label>Nº da frota ou centro de custo *<input id="nf" list="fl" inputmode="numeric" required oninput="fillF(this.value)" placeholder="${frota.length?"Digite ou selecione":"Digite a frota ou o centro de custo"}"><datalist id="fl">${dl}</datalist></label>
 <label>Tipo<input id="nti" placeholder="automático"></label><label>Marca<input id="nma" placeholder="automático"></label><label>Modelo<input id="nmo" placeholder="automático"></label></div>
 <h3>2 · Serviço</h3><div class="form"><label>Fornecedor (opcional)<input id="nfo"></label><label>Estimativa de tempo (horas)<input id="nhr" type="number" min="1" inputmode="numeric"></label><label>Estimativa de tempo (dias)<input id="nes" type="number" min="1" inputmode="numeric"></label>
 <label class="full">Descrição do serviço *<textarea id="nds" required placeholder="Descreva o que precisa ser feito"></textarea></label></div>
-<h3>3 · Solicitante</h3><div class="form"><label>Nome do gestor *<input id="nge" required value="${esc(ls("ipe_gestor")||"")}"></label><label>Data da solicitação<input value="${fd(today())}" readonly></label></div>
+<h3>3 · Solicitante</h3><div class="form"><label>Matrícula<input id="nmt" list="sl" inputmode="numeric" oninput="fillS(this.value)" value="${esc(ls("ipe_mat")||"")}" placeholder="${sol.length?"Digite ou selecione":"Digite a matrícula"}"><datalist id="sl">${sol.map(x=>`<option value="${esc(x.m)}">${esc(x.n)}</option>`).join("")}</datalist></label><label>Nome do gestor *<input id="nge" required placeholder="automático pela matrícula" value="${esc(ls("ipe_gestor")||"")}"></label><label>Data da solicitação<input value="${fd(today())}" readonly></label></div>
 <div class="row"><button class="btn big">Enviar solicitação</button></div></form>`}
+function fillS(v){const x=sol.find(y=>String(y.m)==v.trim());if(x)nge.value=x.n}
 function fillF(v){const x=frota.find(y=>String(y.f)==v.trim());if(x){nma.value=x.ma||"";nmo.value=x.mo||"";nti.value=x.ti||""}}
 async function sendReq(e){e.preventDefault();if(!nes.value&&!nhr.value){alert("Informe a estimativa de tempo em horas ou em dias.");return}const d=new Date(),p=n=>String(n).padStart(2,"0");
  const id="PCM-"+String(d.getFullYear()).slice(2)+p(d.getMonth()+1)+p(d.getDate())+"-"+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds());
- const r={id,dt:d.toISOString(),fr:nf.value.trim(),ma:nma.value,mo:nmo.value,ti:nti.value,fn:nfo.value.trim(),forn:"",ge:nge.value.trim(),es:+nes.value||0,eh:+nhr.value||0,ds:nds.value.trim(),st:"Pendente",nr:"",ab:"",env:"",prev:"",ret:"",h:[{d:d.toISOString(),w:nge.value.trim(),t:"Solicitação criada"}]};
- ls("ipe_gestor",r.ge);await saveReq(r);msg=`✅ Solicitação enviada. Protocolo: <b>${id}</b> — guarde este número.`;render();scrollTo(0,0)}
+ const r={id,dt:d.toISOString(),fr:nf.value.trim(),ma:nma.value,mo:nmo.value,ti:nti.value,fn:nfo.value.trim(),forn:"",ge:nge.value.trim(),mat:nmt.value.trim(),es:+nes.value||0,eh:+nhr.value||0,ds:nds.value.trim(),st:"Pendente",nr:"",ab:"",env:"",prev:"",ret:"",h:[{d:d.toISOString(),w:nge.value.trim(),t:"Solicitação criada"}]};
+ ls("ipe_gestor",r.ge);ls("ipe_mat",r.mat);await saveReq(r);msg=`✅ Solicitação enviada. Protocolo: <b>${id}</b> — guarde este número.`;render();scrollTo(0,0)}
 function vPcm(){const l=filt(reqs).filter(r=>!q||[r.id,r.fr,r.forn,r.fn,r.ge,r.nr,r.ds].join(" ").toLowerCase().includes(q.toLowerCase()));
  const pend=l.filter(r=>r.st=="Pendente"),resp=l.filter(r=>r.st!="Pendente"&&r.st!="Cancelada"),lst=pf=="pend"?pend:pf=="resp"?resp:l;
  const ch=[["pend","Pendentes",pend.length],["resp","Respondidas",resp.length],["all","Todas",l.length]];
@@ -129,9 +140,15 @@ function vEq(){const l=filt(reqs).filter(r=>r.st!="Pendente"&&r.st!="Cancelada")
  const ch=[["","Todos"],["tr","Em terceiros"],["env","Enviados"],["ex","Em execução"],["ret","Retornaram"],["at","Retorno atrasado"]];
  return `${ph("Controle de equipamentos","Acompanhe o que está em terceiros e o que está com retorno atrasado (linhas em vermelho).")}${fbar()}<div class="chips">${ch.map(c=>`<button class="${chip==c[0]?"on":""}" onclick="chip='${c[0]}';render()">${c[1]} (${k[c[0]].length})</button>`).join("")}</div>
 <div class="card">${table(k[chip].sort((a,b)=>(a.prev||"9").localeCompare(b.prev||"9")),[C.fr,C.eq,C.fo,C.pr,C.nr,C.en,C.pv,C.rt,C.st])}</div>`}
-function vFr(){return `${ph("Base de frota","Importe a planilha Excel com a lista de equipamentos.")}<div class="card"><p>${frota.length} equipamentos cadastrados.</p><p class="note">Importe a planilha Excel (primeira aba) com colunas de frota/código, marca, modelo e tipo. A importação substitui a base atual.</p>
-<input type="file" accept=".xlsx,.xls,.csv" onchange="impF(this.files[0])"><p id="fi" class="note"></p></div>
-${frota.length?`<div class="card tw"><table><tr><th>Frota</th><th>Tipo</th><th>Marca</th><th>Modelo</th></tr>${frota.slice(0,50).map(x=>`<tr><td>${esc(x.f)}</td><td>${esc(x.ti)}</td><td>${esc(x.ma)}</td><td>${esc(x.mo)}</td></tr>`).join("")}</table>${frota.length>50?'<p class="note">Mostrando 50 primeiros.</p>':""}</div>`:""}`}
+function vFr(){const pv=(a,h,f)=>a.length?`<div class="card tw"><table><tr>${h.map(x=>"<th>"+x+"</th>").join("")}</tr>${a.slice(0,30).map(x=>"<tr>"+f(x).map(c=>"<td>"+esc(c)+"</td>").join("")+"</tr>").join("")}</table>${a.length>30?'<p class="note">Mostrando os 30 primeiros.</p>':""}</div>`:"";
+ return ph("Bases de dados","Importe as planilhas Excel usadas no formulário. Cada importação substitui a base atual.")+
+ `<div class="card"><h3 style="margin-top:0">🚜 Base de frota</h3><p>${frota.length} equipamentos cadastrados.</p><p class="note">Importe a planilha Excel (primeira aba) com colunas de frota/código, marca, modelo e tipo. A importação substitui a base atual.</p><input type="file" accept=".xlsx,.xls,.csv" onchange="impF(this.files[0])"><p id="fi" class="note"></p></div>${pv(frota,["Frota","Tipo","Marca","Modelo"],x=>[x.f,x.ti,x.ma,x.mo])}
+<div class="card"><h3 style="margin-top:0">👤 Base de solicitantes</h3><p>${sol.length} solicitantes cadastrados.</p><p class="note">Importe a planilha Excel (primeira aba) com colunas de Matrícula e Nome. A importação substitui a base atual.</p><input type="file" accept=".xlsx,.xls,.csv" onchange="impS(this.files[0])"><p id="si" class="note"></p></div>${pv(sol,["Matrícula","Nome"],x=>[x.m,x.n])}`}
+async function impS(file){if(!file)return;const o=$("#si");try{const wb=XLSX.read(await file.arrayBuffer()),rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:""});
+ const key=re=>Object.keys(rows[0]||{}).find(k=>re.test(k.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()));
+ const km=key(/matric|chapa|cod/),kn=key(/nome|name|colaborador|funcionario/);
+ if(!km||!kn){o.textContent="Colunas Matrícula e Nome não encontradas.";return}
+ await saveSol(rows.map(r=>({m:String(r[km]).trim(),n:String(r[kn]).trim()})).filter(x=>x.m&&x.n))}catch(e){o.textContent="Erro ao importar: "+e.message}}
 async function impF(file){if(!file)return;try{const wb=XLSX.read(await file.arrayBuffer()),rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:""});
  const key=re=>Object.keys(rows[0]||{}).find(k=>re.test(k.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase()));
  const kf=key(/frota|codigo|equip|cod/),km=key(/marca|fabric/),ko=key(/modelo/),kt=key(/tipo|classe|descri/);
@@ -146,7 +163,7 @@ function openReq(id){const r=reqs.find(x=>x.id==id);if(!r)return;$("#dt").textCo
  const fl=ST.slice(0,5),ix=fl.indexOf(r.st);
  $("#dbody").dataset.es=r.es||Math.ceil((r.eh||0)/24);
  $("#dbody").innerHTML=`<div class="steps">${fl.map((s,i)=>`<div class="${i<ix?"done":i==ix?"cur":""}"><i>${i<ix?"✓":i+1}</i><span>${s}</span></div>`).join("")}</div>${r.st=="Cancelada"?'<p><span class="tag c">Cancelada</span></p>':""}
-<div class="info"><div><small>Frota</small><b>${esc(r.fr)}</b></div><div><small>Equipamento</small>${esc([r.ti,r.ma,r.mo].filter(Boolean).join(" · ")||"—")}</div><div><small>Gestor</small>${esc(r.ge)}</div><div><small>Fornecedor sugerido</small>${esc(r.fn||"—")}</div><div><small>Estimativa</small>${est(r)}</div><div class="full"><small>Serviço solicitado</small>${esc(r.ds)}</div></div>
+<div class="info"><div><small>Frota</small><b>${esc(r.fr)}</b></div><div><small>Equipamento</small>${esc([r.ti,r.ma,r.mo].filter(Boolean).join(" · ")||"—")}</div><div><small>Gestor</small>${esc(r.ge)}${r.mat?" ("+esc(r.mat)+")":""}</div><div><small>Fornecedor sugerido</small>${esc(r.fn||"—")}</div><div><small>Estimativa</small>${est(r)}</div><div class="full"><small>Serviço solicitado</small>${esc(r.ds)}</div></div>
 <h3>Requisição</h3><div class="form"><label>Nº da requisição<input id="e_nr" value="${esc(r.nr)}"></label><label>Fornecedor confirmado<input id="e_forn" value="${esc(r.forn||r.fn)}"></label>
 <label>Data de abertura<input id="e_ab" type="date" value="${r.ab}"></label><label>Situação<select id="e_st">${ST.map(s=>`<option ${s==r.st?"selected":""}>${s}</option>`).join("")}</select></label></div>
 <h3>Envio e retorno</h3><div class="row" style="margin:0 0 10px"><button class="btn alt" onclick="quick('env')">🚚 Enviado hoje</button><button class="btn alt" onclick="quick('ret')">✅ Retornou hoje</button></div>
@@ -162,7 +179,7 @@ async function saveDet(id){const r=structuredClone(reqs.find(x=>x.id==id)),w=ask
  const ob=$("#e_ob").value.trim();if(ob)ch.push("Obs.: "+ob);
  if(ch.length){r.h.push({d:new Date().toISOString(),w,t:ch.join(" | ")});await saveReq(r)}dlg.close()}
 function mailReq(id){const r=reqs.find(x=>x.id==id),g=k=>$("#e_"+k)?.value||"";
- const body=`Prezados,\n\nSegue solicitação de serviço de terceiros:\n\nProtocolo: ${r.id}\nNº da requisição: ${g("nr")||"—"}\nData de abertura: ${fd(g("ab"))}\nFrota: ${r.fr}\nEquipamento: ${[r.ti,r.ma,r.mo].filter(Boolean).join(" / ")}\nFornecedor: ${g("forn")}\nServiço: ${r.ds}\nGestor solicitante: ${r.ge}\nEstimativa: ${est(r)}\nData da solicitação: ${fd(r.dt.slice(0,10))}\n\nAtenciosamente,\nPCM – Usina Ipê`;
+ const body=`Prezados,\n\nSegue solicitação de serviço de terceiros:\n\nProtocolo: ${r.id}\nNº da requisição: ${g("nr")||"—"}\nData de abertura: ${fd(g("ab"))}\nFrota: ${r.fr}\nEquipamento: ${[r.ti,r.ma,r.mo].filter(Boolean).join(" / ")}\nFornecedor: ${g("forn")}\nServiço: ${r.ds}\nGestor solicitante: ${r.ge}${r.mat?" (matrícula "+r.mat+")":""}\nEstimativa: ${est(r)}\nData da solicitação: ${fd(r.dt.slice(0,10))}\n\nAtenciosamente,\nPCM – Usina Ipê`;
  location.href=`mailto:${ls("ipe_mail")||""}?subject=${encodeURIComponent("Requisição de serviço de terceiros – "+r.id+" – Frota "+r.fr)}&body=${encodeURIComponent(body)}`;
  const rr=structuredClone(r);rr.h.push({d:new Date().toISOString(),w:askWho(),t:"E-mail ao setor de serviços preparado"});saveReq(rr)}
 async function delReq(id){if(!confirm("Excluir a solicitação "+id+"? O histórico dela também será apagado e isso não pode ser desfeito."))return;
@@ -172,7 +189,7 @@ function saveHtml(){try{const c=document.documentElement.cloneNode(true);
  c.querySelector("#m").innerHTML="";c.querySelector("#dbody").innerHTML="";c.querySelector("#dt").textContent="";const d=c.querySelector("dialog");d.removeAttribute("open");
  const o=c.querySelector("#snap");if(o)o.remove();
  const sn=document.createElement("script");sn.id="snap";sn.type="application/json";
- sn.textContent=JSON.stringify({reqs,frota,em:new Date().toISOString()}).replace(/</g,"\\u003c");c.querySelector("body").appendChild(sn);
+ sn.textContent=JSON.stringify({reqs,frota,sol,em:new Date().toISOString()}).replace(/</g,"\\u003c");c.querySelector("body").appendChild(sn);
  const h="<!DOCTYPE html>\n"+c.outerHTML,a=document.createElement("a");
  a.href=URL.createObjectURL(new Blob([h],{type:"text/html"}));a.download="portal-requisicoes-pcm-"+today()+".html";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
  catch(e){alert("Não foi possível gerar o arquivo: "+e.message)}}
