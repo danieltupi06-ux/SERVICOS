@@ -37,7 +37,7 @@ dialog{border:0;border-radius:14px;max-width:760px;width:94vw;padding:0;backgrou
 @media(max-width:760px){body{flex-direction:column}nav{width:100%;flex-direction:row;flex-wrap:wrap;padding:10px;gap:2px}nav h1{width:100%;margin:0 4px 6px}nav button{padding:8px 10px;font-size:13px}main{padding:14px}}
 </style></head><body>
 <nav><h1>Usina Ipê<small>Requisições de Terceiros – PCM</small></h1>
-<button data-v="home">📊 Painel principal</button><button data-v="new">📝 Nova solicitação</button><button data-v="pcm">🛠️ Painel do PCM</button><button data-v="eq">🚜 Controle de equipamentos</button><button data-v="fr">📁 Base de frota</button></nav>
+<button data-v="home" class="on">📊 Painel principal</button><button data-v="new">📝 Nova solicitação</button><button data-v="pcm">🛠️ Painel do PCM</button><button data-v="eq">🚜 Controle de equipamentos</button><button data-v="fr">📁 Base de frota</button><button onclick="saveHtml()" style="margin-top:auto;background:rgba(255,255,255,.16)">💾 Salvar HTML atualizado</button></nav>
 <main id="m"></main>
 <dialog id="dlg"><div class="dh"><b id="dt"></b><button onclick="dlg.close()">×</button></div><div class="db" id="dbody"></div></dialog>
 <script>
@@ -45,7 +45,7 @@ const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"]/g,c=>(
 const ST=["Pendente","Requisição aberta","Enviado","Em execução","Retornou","Cancelada"];
 const today=()=>new Date().toISOString().slice(0,10),fd=d=>d?d.slice(8,10)+"/"+d.slice(5,7)+"/"+d.slice(0,4):"—",fdt=d=>d?new Date(d).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"}):"";
 const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}};
-let err="",reqs=[],frota=[],view="home",F={f:"",s:"",g:"",a:"",b:""},chip="",pf="pend",db=null,msg="";
+let snapAt="",err="",reqs=[],frota=[],view="home",F={f:"",s:"",g:"",a:"",b:""},chip="",pf="pend",db=null,msg="";
 const emTerc=r=>r.st=="Enviado"||r.st=="Em execução",atras=r=>emTerc(r)&&r.prev&&r.prev<today();
 const tagc=r=>atras(r)?"a":r.st=="Pendente"?"p":r.st=="Cancelada"?"c":"";
 const stLabel=r=>atras(r)?r.st+" · ATRASADO":r.st;
@@ -57,7 +57,8 @@ const rs=()=>{const a=document.activeElement;if(view=='new'&&a&&/INPUT|TEXTAREA/
 async function load(){try{const a=await api("req?select=dados"),c=await api("cfg?chave=eq.frota&select=dados");reqs=(a||[]).map(x=>x.dados);frota=(c&&c[0]&&c[0].dados.rows)||[];err="";}catch(e){err="Erro de conexão com o banco: "+e.message}rs()}
 async function init(){db=on();
  if(db){await load();setInterval(load,15000)}
- else{try{reqs=JSON.parse(ls("ipe_req")||"[]");frota=JSON.parse(ls("ipe_frota")||"[]")}catch(e){}}
+ else{const sn=document.getElementById("snap");
+  try{if(sn){const d=JSON.parse(sn.textContent);reqs=d.reqs||[];frota=d.frota||[];snapAt=d.em}else{reqs=JSON.parse(ls("ipe_req")||"[]");frota=JSON.parse(ls("ipe_frota")||"[]")}}catch(e){}}
  render();
 }
 async function saveReq(r){if(db){await api("req",{method:"POST",body:JSON.stringify({id:r.id,dados:r,atualizado:new Date().toISOString()})});reqs=reqs.filter(x=>x.id!=r.id).concat(r);render()}else{reqs=reqs.filter(x=>x.id!=r.id).concat(r);ls("ipe_req",JSON.stringify(reqs));render()}}
@@ -82,7 +83,7 @@ const C={pr:["Protocolo",r=>"<b>"+r.id+"</b>"],dt:["Solicitação",r=>fd(r.dt.sl
 // ---------- telas
 function render(){document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v==view));
  const m=$("#m");let h="";
- if(!db)h='<p class="note">⚠️ Banco não configurado: os dados ficam só neste navegador.</p>';if(err)h+='<p class="note" style="color:var(--red)">'+esc(err)+'</p>';
+ if(!db)h='<p class="note">'+(snapAt?'📄 Cópia salva em '+fdt(snapAt)+' (dados fixos neste arquivo).':'⚠️ Banco não configurado: os dados ficam só neste navegador.')+'</p>';if(err)h+='<p class="note" style="color:var(--red)">'+esc(err)+'</p>';
  if(view=="home")h+=vHome();else if(view=="new")h+=vNew();else if(view=="pcm")h+=vPcm();else if(view=="eq")h+=vEq();else h+=vFr();
  const a=document.activeElement,id=a&&a.id,v=a&&a.value;m.innerHTML=h;if(view=="new"&&id){const e=document.getElementById(id);if(e){if(v!==undefined)e.value=v;e.focus()}}}
 function vHome(){const l=filt(reqs);const n=(f)=>l.filter(f).length;
@@ -148,7 +149,16 @@ function mailReq(id){const r=reqs.find(x=>x.id==id),g=k=>$("#e_"+k)?.value||"";
 async function delReq(id){if(!confirm("Excluir a solicitação "+id+"? O histórico dela também será apagado e isso não pode ser desfeito."))return;
  try{await delRemote(id)}catch(e){alert("Não foi possível excluir: "+(e.message||e));return}
  dlg.close();render()}
+function saveHtml(){try{const c=document.documentElement.cloneNode(true);
+ c.querySelector("#m").innerHTML="";c.querySelector("#dbody").innerHTML="";c.querySelector("#dt").textContent="";const d=c.querySelector("dialog");d.removeAttribute("open");
+ const o=c.querySelector("#snap");if(o)o.remove();
+ const sn=document.createElement("script");sn.id="snap";sn.type="application/json";
+ sn.textContent=JSON.stringify({reqs,frota,em:new Date().toISOString()}).replace(/</g,"\\u003c");c.querySelector("body").appendChild(sn);
+ const h="<!DOCTYPE html>\n"+c.outerHTML,a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([h],{type:"text/html"}));a.download="portal-requisicoes-pcm-"+today()+".html";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+ catch(e){alert("Não foi possível gerar o arquivo: "+e.message)}}
 function go(v){view=v;if(v!="new")msg="";render();scrollTo(0,0)}
 document.querySelector("nav").onclick=e=>{if(e.target.dataset.v)go(e.target.dataset.v)};
 init();
-</script></body></html>
+</script>
+<script id="snap" type="application/json">{"reqs":[],"frota":[],"em":"2026-11-19T02:04:53.768Z"}</script></body></html>
