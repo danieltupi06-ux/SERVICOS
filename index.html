@@ -98,7 +98,7 @@ const emTerc=r=>r.st=="Enviado"||r.st=="Em execução",atras=r=>emTerc(r)&&r.pre
 const tagc=r=>atras(r)?"a":r.st=="Pendente"?"p":r.st=="Cancelada"?"c":"";
 const stLabel=r=>atras(r)?r.st+" · ATRASADO "+Math.floor((new Date(today())-new Date(r.prev))/864e5)+"d":r.st;
 // ---------- armazenamento (compartilhado via db; local se indisponível)
-const SB="https://mrcxnfzpddkjpbmsmway.supabase.co",KEY="COLE_AQUI_A_CHAVE_ANON_PUBLICA";
+const SB="https://mrcxnfzpddkjpbmsmway.supabase.co",KEY="sb_publishable_H_O7-yGLzk-wtc6M6Tt8xQ_6EutwDue";
 const on=()=>!KEY.startsWith("COLE");
 const api=(p,o={})=>fetch(SB+"/rest/v1/"+p,{...o,headers:{apikey:KEY,Authorization:"Bearer "+KEY,"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal",...(o.headers||{})}}).then(async r=>{if(!r.ok)throw new Error((await r.text())||r.status);return r.status==204||r.headers.get("content-length")=="0"?null:r.json().catch(()=>null)});
 const rs=()=>{const a=document.activeElement;if((view=='new'||view=='fr')&&a&&/INPUT|TEXTAREA/.test(a.tagName))return;render()};
